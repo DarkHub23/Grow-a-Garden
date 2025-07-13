@@ -5,6 +5,7 @@ screenGui.Name = "FancySpawnerUI"
 screenGui.ResetOnSpawn = false
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
+local isLoading = false -- ✅ ตัวแปรป้องกันโหลดซ้ำ
 
 -- 🌐 Languages
 local currentLang = "en"
@@ -23,6 +24,7 @@ local languages = {
 		},
 		placeholder = "Enter value...",
 		spawn = "Spawn",
+		close = "Destroy GUI"
 	},
 	th = {
 		title = "สคริปเสกของ",
@@ -38,20 +40,36 @@ local languages = {
 		},
 		placeholder = "ใส่ข้อมูล...",
 		spawn = "เสก",
+		close = "ปิด GUI"
 	},
 }
 
--- 🪟 Main UI Frame
+-- 🔮 Main UI Frame
 local mainFrame = Instance.new("Frame")
 mainFrame.Size = UDim2.new(0, 460, 0, 480)
-mainFrame.Position = UDim2.new(0.5, -230, 0.5, -240)
-mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0) -- ✅ อยู่กลางจอพอดี
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 mainFrame.BorderSizePixel = 0
 mainFrame.Parent = screenGui
 
+
 Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 14)
 Instance.new("UIStroke", mainFrame).Color = Color3.fromRGB(60, 60, 60)
+
+-- ❌ ปุ่มปิด UI ที่มีข้อความ Close UI
+local closeBtn = Instance.new("TextButton", mainFrame)
+closeBtn.Size = UDim2.new(0, 100, 0, 30)
+closeBtn.Position = UDim2.new(1, -260, 0, 10)
+closeBtn.Text = languages[currentLang].close
+closeBtn.Font = Enum.Font.Gotham
+closeBtn.TextSize = 14
+closeBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
+closeBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)
+closeBtn.MouseButton1Click:Connect(function()
+	screenGui:Destroy()
+end)
 
 -- ✨ Title
 local title = Instance.new("TextLabel", mainFrame)
@@ -74,6 +92,7 @@ langBtn.TextSize = 14
 langBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 langBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 Instance.new("UICorner", langBtn).CornerRadius = UDim.new(0, 6)
+
 
 -- Tabs and Content
 local tabNames = {"Pet", "Seed", "Egg"}
