@@ -43,12 +43,25 @@ local languages = {
 
 -- 🪟 Main UI Frame
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 460, 0, 480)
-mainFrame.Position = UDim2.new(0.5, -230, 0.5, -240)
+local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
+local isMobile = UIS.TouchEnabled and not RunService:IsStudio()
+
+if isMobile then
+	mainFrame.Size = UDim2.new(0.75, 0, 0.5, 0)-- เล็กลงสำหรับมือถือ
+	local uiScale = Instance.new("UIScale", mainFrame)
+	uiScale.Scale = 0.85 -- ย่อเพิ่มอีกนิด
+else
+	mainFrame.Size = UDim2.new(0, 460, 0, 480) -- ขนาดปกติบนคอม
+end
+
+mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 mainFrame.BorderSizePixel = 0
 mainFrame.Parent = screenGui
+
 
 Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 14)
 Instance.new("UIStroke", mainFrame).Color = Color3.fromRGB(60, 60, 60)
@@ -93,24 +106,37 @@ contentHolder.BackgroundTransparency = 1
 local UIS = game:GetService("UserInputService")
 local dragging, dragInput, dragStart, startPos
 mainFrame.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 		dragging = true
 		dragStart = input.Position
 		startPos = mainFrame.Position
+
 		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then dragging = false end
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
 		end)
 	end
 end)
+
 mainFrame.InputChanged:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseMovement then dragInput = input end
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInput = input
+	end
 end)
+
 UIS.InputChanged:Connect(function(input)
 	if input == dragInput and dragging then
 		local delta = input.Position - dragStart
-		mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+		mainFrame.Position = UDim2.new(
+			startPos.X.Scale,
+			startPos.X.Offset + delta.X,
+			startPos.Y.Scale,
+			startPos.Y.Offset + delta.Y
+		)
 	end
 end)
+
 
 -- Loading Screen
 local function showLoading()
@@ -131,7 +157,7 @@ local function showLoading()
 	bg.Size = UDim2.new(1, 0, 1, 0)
 	bg.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 	bg.ZIndex = 100
-	
+
 	local loadingCredit = Instance.new("TextLabel", bg)
 	loadingCredit.AnchorPoint = Vector2.new(1, 1)
 	loadingCredit.Position = UDim2.new(1, -10, 1, -10)
@@ -156,7 +182,7 @@ local function showLoading()
 	warnLabel.TextWrapped = true
 	warnLabel.Text = currentLang == "en" and "Do not leave the game, or you may lose your items." or "ห้ามออกจากเกม มิฉะนั้นคุณอาจสูญเสียของ!"
 	warnLabel.ZIndex = 101
-	
+
 	local TweenService = game:GetService("TweenService")
 
 	local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut, -1, true)
@@ -205,7 +231,7 @@ local function createTab(name)
 	local fieldCount = #languages[currentLang].fields[name]
 	for i = 1, fieldCount do
 		local entry = Instance.new("Frame")
-		entry.Size = UDim2.new(0, 400, 0, 40)
+		entry.Size = UDim2.new(0.9, 0, 0, 40) -- เดิม 0,400
 		entry.AnchorPoint = Vector2.new(0.5, 0)
 		entry.Position = UDim2.new(0.5, 0, 0, 0)
 		entry.BackgroundTransparency = 1
