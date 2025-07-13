@@ -1,3 +1,333 @@
-loadstring(game:HttpGet("https://raw.githubusercontent.com/DarkHub23/Grow-a-Garden/main/KeyLess.lua"))()
-task.wait(2)
-loadstring(game:HttpGet("https://get.nathub.xyz/loader"))()
+--📦 Fancy Dark UI Tabbed Spawner with Language Toggle & Centered Fields
+local player = game.Players.LocalPlayer
+local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+screenGui.Name = "FancySpawnerUI"
+screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+
+-- 🌐 Languages
+local currentLang = "en"
+local languages = {
+	en = {
+		title = "Spawner Menu",
+		tabs = {
+			Pet = "Pet Spawner",
+			Seed = "Seed Spawner",
+			Egg = "Egg Spawner",
+		},
+		fields = {
+			Pet = { "Pet Name", "Weight", "Age" },
+			Seed = { "Seed Name" },
+			Egg = { "Egg Name" },
+		},
+		placeholder = "Enter value...",
+		spawn = "Spawn",
+	},
+	th = {
+		title = "สคริปเสกของ",
+		tabs = {
+			Pet = "เสกสัตว์",
+			Seed = "เสกเมล็ด",
+			Egg = "เสกไข่",
+		},
+		fields = {
+			Pet = { "ชื่อสัตว์เลี้ยง", "น้ำหนัก", "อายุ" },
+			Seed = { "ชื่อเมล็ด" },
+			Egg = { "ชื่อไข่" },
+		},
+		placeholder = "ใส่ข้อมูล...",
+		spawn = "เสก",
+	},
+}
+
+-- 🪟 Main UI Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 460, 0, 480)
+mainFrame.Position = UDim2.new(0.5, -230, 0.5, -240)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = screenGui
+
+Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 14)
+Instance.new("UIStroke", mainFrame).Color = Color3.fromRGB(60, 60, 60)
+
+-- ✨ Title
+local title = Instance.new("TextLabel", mainFrame)
+title.Size = UDim2.new(1, -20, 0, 40)
+title.Position = UDim2.new(0, 10, 0, 10)
+title.BackgroundTransparency = 1
+title.Font = Enum.Font.GothamBlack
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextSize = 22
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Text = languages[currentLang].title
+
+-- 🌐 Language Toggle
+local langBtn = Instance.new("TextButton", mainFrame)
+langBtn.Size = UDim2.new(0, 100, 0, 30)
+langBtn.Position = UDim2.new(1, -110, 0, 10)
+langBtn.Text = currentLang == "en" and "ภาษาไทย" or "English"
+langBtn.Font = Enum.Font.Gotham
+langBtn.TextSize = 14
+langBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+langBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+Instance.new("UICorner", langBtn).CornerRadius = UDim.new(0, 6)
+
+-- Tabs and Content
+local tabNames = {"Pet", "Seed", "Egg"}
+local tabButtons, tabContents, uiRefs = {}, {}, {}
+
+local tabFrame = Instance.new("Frame", mainFrame)
+tabFrame.Size = UDim2.new(1, -20, 0, 40)
+tabFrame.Position = UDim2.new(0, 10, 0, 60)
+tabFrame.BackgroundTransparency = 1
+
+local contentHolder = Instance.new("Frame", mainFrame)
+contentHolder.Size = UDim2.new(1, -20, 1, -120)
+contentHolder.Position = UDim2.new(0, 10, 0, 110)
+contentHolder.BackgroundTransparency = 1
+
+-- Drag System
+local UIS = game:GetService("UserInputService")
+local dragging, dragInput, dragStart, startPos
+mainFrame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = mainFrame.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then dragging = false end
+		end)
+	end
+end)
+mainFrame.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement then dragInput = input end
+end)
+UIS.InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		local delta = input.Position - dragStart
+		mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+end)
+
+-- Loading Screen
+local function showLoading()
+	local StarterGui = game:GetService("StarterGui")
+	pcall(function()
+		StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, false)
+	end)
+	UIS.MouseIconEnabled = false
+	UIS.MouseBehavior = Enum.MouseBehavior.LockCenter
+	local Controls = require(player:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule")):GetControls()
+	Controls:Disable()
+
+	local loadingGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+	loadingGui.IgnoreGuiInset = true
+	loadingGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+	local bg = Instance.new("Frame", loadingGui)
+	bg.Size = UDim2.new(1, 0, 1, 0)
+	bg.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+	bg.ZIndex = 100
+	
+	local loadingCredit = Instance.new("TextLabel", bg)
+	loadingCredit.AnchorPoint = Vector2.new(1, 1)
+	loadingCredit.Position = UDim2.new(1, -10, 1, -10)
+	loadingCredit.Size = UDim2.new(0, 200, 0, 20)
+	loadingCredit.BackgroundTransparency = 1
+	loadingCredit.Font = Enum.Font.Gotham
+	loadingCredit.TextColor3 = Color3.fromRGB(120, 120, 120)
+	loadingCredit.TextSize = 12
+	loadingCredit.TextXAlignment = Enum.TextXAlignment.Right
+	loadingCredit.Text = "Made by dkubpom_"
+	loadingCredit.ZIndex = 101
+
+	local warnLabel = Instance.new("TextLabel", bg)
+	warnLabel.Text = "" -- ป้องกันการโชว์ "Label" ชั่วคราว
+	warnLabel.AnchorPoint = Vector2.new(0.5, 0)
+	warnLabel.Position = UDim2.new(0.5, 0, 0.5, 40)
+	warnLabel.Size = UDim2.new(0, 400, 0, 40)
+	warnLabel.BackgroundTransparency = 1
+	warnLabel.Font = Enum.Font.Gotham
+	warnLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
+	warnLabel.TextSize = 16
+	warnLabel.TextWrapped = true
+	warnLabel.Text = currentLang == "en" and "Do not leave the game, or you may lose your items." or "ห้ามออกจากเกม มิฉะนั้นคุณอาจสูญเสียของ!"
+	warnLabel.ZIndex = 101
+	
+	local TweenService = game:GetService("TweenService")
+
+	local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut, -1, true)
+	local fadeTween = TweenService:Create(warnLabel, tweenInfo, {TextTransparency = 0.4})
+	fadeTween:Play()
+
+	local percentLabel = Instance.new("TextLabel", bg)
+	percentLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+	percentLabel.Position = UDim2.new(0.5, 0, 0.5, 0)
+	percentLabel.Size = UDim2.new(0, 200, 0, 60)
+	percentLabel.BackgroundTransparency = 1
+	percentLabel.Font = Enum.Font.GothamBlack
+	percentLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	percentLabel.TextSize = 36
+	percentLabel.ZIndex = 101
+	percentLabel.Text = "" -- ป้องกัน Label ชั่วคราว
+	for i = 1, 100 do
+		task.wait(0.7)
+		percentLabel.Text = "Loading: " .. i .. "%"
+	end
+	task.wait(15)
+	loadingGui:Destroy()
+	Controls:Enable()
+	UIS.MouseBehavior = Enum.MouseBehavior.Default
+	UIS.MouseIconEnabled = true
+	pcall(function()
+		StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, true)
+	end)
+end
+
+-- Create Tab UI
+local function createTab(name)
+	local scroll = Instance.new("ScrollingFrame")
+	scroll.Size = UDim2.new(1, 0, 1, 0)
+	scroll.BackgroundTransparency = 1
+	scroll.CanvasSize = UDim2.new(0, 0, 0, 500)
+	scroll.ScrollBarThickness = 6
+	scroll.Visible = false
+
+	local layout = Instance.new("UIListLayout", scroll)
+	layout.SortOrder = Enum.SortOrder.LayoutOrder
+	layout.Padding = UDim.new(0, 10)
+	layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+	uiRefs[name] = {}
+	local fieldCount = #languages[currentLang].fields[name]
+	for i = 1, fieldCount do
+		local entry = Instance.new("Frame")
+		entry.Size = UDim2.new(0, 400, 0, 40)
+		entry.AnchorPoint = Vector2.new(0.5, 0)
+		entry.Position = UDim2.new(0.5, 0, 0, 0)
+		entry.BackgroundTransparency = 1
+
+		local label = Instance.new("TextLabel", entry)
+		label.Size = UDim2.new(0.4, 0, 1, 0)
+		label.BackgroundTransparency = 1
+		label.Font = Enum.Font.Gotham
+		label.TextColor3 = Color3.fromRGB(200, 200, 200)
+		label.TextSize = 14
+		label.TextXAlignment = Enum.TextXAlignment.Left
+		label.Text = languages[currentLang].fields[name][i]
+
+		local input = Instance.new("TextBox", entry)
+		input.Size = UDim2.new(0.6, -10, 1, -4)
+		input.Position = UDim2.new(0.4, 10, 0, 2)
+		input.Font = Enum.Font.Gotham
+		input.TextColor3 = Color3.fromRGB(255, 255, 255)
+		input.TextSize = 14
+		input.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+		input.PlaceholderText = languages[currentLang].placeholder
+		Instance.new("UICorner", input).CornerRadius = UDim.new(0, 6)
+
+		entry.Parent = scroll
+		table.insert(uiRefs[name], { label = label, input = input })
+	end
+
+	local btn = Instance.new("TextButton", scroll)
+	btn.Size = UDim2.new(0, 200, 0, 40)
+	btn.AnchorPoint = Vector2.new(0.5, 0)
+	btn.Position = UDim2.new(0.5, 0, 0, 0)
+	btn.Font = Enum.Font.GothamBold
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.TextSize = 16
+	btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	btn.Text = languages[currentLang].spawn .. " " .. name
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+	btn.MouseButton1Click:Connect(function()
+		showLoading()
+		print("Spawn clicked for:", name)
+	end)
+
+	btn.Parent = scroll
+	table.insert(uiRefs[name], { button = btn })
+	scroll.Parent = contentHolder
+	return scroll
+end
+
+-- Create Tabs
+for i, name in ipairs(tabNames) do
+	local btn = Instance.new("TextButton", tabFrame)
+	btn.Size = UDim2.new(0, 120, 1, 0)
+	btn.Position = UDim2.new(0, (i - 1) * 130, 0, 0)
+	btn.Font = Enum.Font.GothamSemibold
+	btn.TextSize = 14
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	btn.Text = languages[currentLang].tabs[name]
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+	tabButtons[name] = btn
+	tabContents[name] = createTab(name)
+	btn.MouseButton1Click:Connect(function()
+		for _, c in pairs(tabContents) do c.Visible = false end
+		tabContents[name].Visible = true
+	end)
+end
+
+-- Toggle Minimize
+local toggleBtn = Instance.new("TextButton", mainFrame)
+toggleBtn.Size = UDim2.new(0, 30, 0, 30)
+toggleBtn.Position = UDim2.new(1, -150, 0, 10)
+toggleBtn.Text = "_"
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.TextSize = 18
+toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0, 6)
+
+local isMinimized = false
+toggleBtn.MouseButton1Click:Connect(function()
+	isMinimized = not isMinimized
+	tabFrame.Visible = not isMinimized
+	contentHolder.Visible = not isMinimized
+	mainFrame.Size = isMinimized and UDim2.new(0, 460, 0, 60) or UDim2.new(0, 460, 0, 480)
+	toggleBtn.Text = isMinimized and "O" or "_"
+end)
+
+-- Language Update
+local function updateLanguage()
+	local lang = languages[currentLang]
+	title.Text = lang.title
+	langBtn.Text = currentLang == "en" and "ภาษาไทย" or "English"
+	for name, btn in pairs(tabButtons) do
+		btn.Text = lang.tabs[name]
+	end
+	for name, refList in pairs(uiRefs) do
+		for i, ref in ipairs(refList) do
+			if ref.label then ref.label.Text = lang.fields[name][i] end
+			if ref.input then ref.input.PlaceholderText = lang.placeholder end
+			if ref.button then ref.button.Text = lang.spawn .. " " .. name end
+		end
+	end
+end
+
+langBtn.MouseButton1Click:Connect(function()
+	currentLang = currentLang == "en" and "th" or "en"
+	updateLanguage()
+end)
+
+-- 👤 Credit Label
+local credit = Instance.new("TextLabel", mainFrame)
+credit.AnchorPoint = Vector2.new(1, 1)
+credit.Position = UDim2.new(1, -10, 1, -10)
+credit.Size = UDim2.new(0, 200, 0, 20)
+credit.BackgroundTransparency = 1
+credit.Font = Enum.Font.Gotham
+credit.TextColor3 = Color3.fromRGB(120, 120, 120)
+credit.TextSize = 12
+credit.TextXAlignment = Enum.TextXAlignment.Right
+credit.Text = "Made by dkubpom_"
+
+
+
+-- Show first tab
+if tabContents["Pet"] then tabContents["Pet"].Visible = true end
