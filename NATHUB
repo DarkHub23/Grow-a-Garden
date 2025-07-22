@@ -16,11 +16,13 @@ local languages = {
 			Pet = "Pet Spawner",
 			Seed = "Seed Spawner",
 			Egg = "Egg Spawner",
+			Mutation = "Mutation Selector",
 		},
 		fields = {
-			Pet = { "Pet Name", "Weight", "Age","Mutation" },
+			Pet = { "Pet Name", "Weight", "Age" },
 			Seed = { "Seed Name" },
 			Egg = { "Egg Name" },
+			Mutation = { "Pet Name [Own]", "Weight", "Age", "Mutation" },
 		},
 		placeholder = "Enter value...",
 		spawn = "Spawn",
@@ -32,11 +34,13 @@ local languages = {
 			Pet = "เสกสัตว์",
 			Seed = "เสกเมล็ด",
 			Egg = "เสกไข่",
+			Mutation = "เลือกการกลายพันธุ์"
 		},
 		fields = {
 			Pet = { "ชื่อสัตว์เลี้ยง", "น้ำหนัก", "อายุ","การกลายพันธุ์" },
 			Seed = { "ชื่อเมล็ด" },
 			Egg = { "ชื่อไข่" },
+			Mutation = { "ชื่อสัตว์เลี้ยง[เป็นเจ้าของ]", "น้ำหนัก", "อายุ", "การกลายพันธุ์" },
 		},
 		placeholder = "ใส่ข้อมูล...",
 		spawn = "เสก",
@@ -95,13 +99,63 @@ Instance.new("UICorner", langBtn).CornerRadius = UDim.new(0, 6)
 
 
 -- Tabs and Content
-local tabNames = {"Pet", "Seed", "Egg"}
+local tabNames = {"Pet", "Seed", "Egg","Mutation"}
 local tabButtons, tabContents, uiRefs = {}, {}, {}
 
-local tabFrame = Instance.new("Frame", mainFrame)
+-- สร้างแท็บแบบเลื่อนได้
+local tabFrame = Instance.new("ScrollingFrame", mainFrame)
 tabFrame.Size = UDim2.new(1, -20, 0, 40)
 tabFrame.Position = UDim2.new(0, 10, 0, 60)
 tabFrame.BackgroundTransparency = 1
+tabFrame.BorderSizePixel = 0
+tabFrame.CanvasSize = UDim2.new(0, #tabNames * 130, 0, 0)
+tabFrame.ScrollBarThickness = 4
+tabFrame.ScrollingDirection = Enum.ScrollingDirection.X
+tabFrame.AutomaticCanvasSize = Enum.AutomaticSize.X
+
+-- จัดปุ่มแนวนอนแบบมีระยะห่าง
+-- เพิ่ม UIListLayout ให้กับ tabFrame
+local layout = Instance.new("UIListLayout", tabFrame)
+layout.FillDirection = Enum.FillDirection.Horizontal
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+layout.Padding = UDim.new(0, 10) -- เว้นห่าง 10px ระหว่างปุ่ม
+
+-- สร้างปุ่มแท็บ
+for i, name in ipairs(tabNames) do
+	local btn = Instance.new("TextButton", tabFrame)
+	btn.Size = UDim2.new(0, 120, 1, 0)
+	btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	btn.Font = Enum.Font.Gotham
+	btn.TextSize = 14
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.Text = languages[currentLang].tabs[name]
+	btn.Name = name
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+
+	btn.MouseButton1Click:Connect(function()
+		switchTab(name)
+	end)
+end
+
+
+-- สร้างปุ่มแท็บตามชื่อใน tabNames
+for i, name in ipairs(tabNames) do
+	local btn = Instance.new("TextButton", tabFrame)
+	btn.Size = UDim2.new(0, 120, 1, 0)
+	btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+	btn.Font = Enum.Font.Gotham
+	btn.TextSize = 14
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.Text = languages[currentLang].tabs[name]
+	btn.Name = name
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+
+	btn.MouseButton1Click:Connect(function()
+		switchTab(name)
+	end)
+end
+
 
 local contentHolder = Instance.new("Frame", mainFrame)
 contentHolder.Size = UDim2.new(1, -20, 1, -120)
@@ -306,6 +360,13 @@ local function createTab(name)
 end
 
 -- Create Tabs
+-- ลบปุ่มแท็บเดิมทั้งหมดก่อนสร้างใหม่
+for _, child in ipairs(tabFrame:GetChildren()) do
+	if child:IsA("TextButton") then
+		child:Destroy()
+	end
+end
+
 for i, name in ipairs(tabNames) do
 	local btn = Instance.new("TextButton", tabFrame)
 	btn.Size = UDim2.new(0, 120, 1, 0)
