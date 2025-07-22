@@ -18,7 +18,7 @@ local languages = {
 			Egg = "Egg Spawner",
 		},
 		fields = {
-			Pet = { "Pet Name", "Weight", "Age" },
+			Pet = { "Pet Name", "Weight", "Age","Mutation" },
 			Seed = { "Seed Name" },
 			Egg = { "Egg Name" },
 		},
@@ -34,7 +34,7 @@ local languages = {
 			Egg = "เสกไข่",
 		},
 		fields = {
-			Pet = { "ชื่อสัตว์เลี้ยง", "น้ำหนัก", "อายุ" },
+			Pet = { "ชื่อสัตว์เลี้ยง", "น้ำหนัก", "อายุ","การกลายพันธุ์" },
 			Seed = { "ชื่อเมล็ด" },
 			Egg = { "ชื่อไข่" },
 		},
